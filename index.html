@@ -31,7 +31,7 @@
         .card-body-scroll { flex: 1 1 auto; overflow-y: auto; padding: 0; }
         .table thead th { position: sticky; top: 0; background-color: #343a40; color: white; z-index: 1; }
         .table tbody tr:hover { background-color: #f1f3f5; }
-        #map { height: 100%; width: 100%; background-color: #e5e3df; }
+        #map { height: 100%; width: 100%; background-color: #e5e3df; border-radius: 8px;}
         .leaflet-popup-content-wrapper { font-family: 'Prompt', sans-serif; }
     </style>
 </head>
@@ -40,8 +40,8 @@
     <div class="app-container">
         <!-- Header -->
         <div class="app-header d-flex justify-content-between align-items-center">
-            <h4 class="mb-0">📊 Dashboard: รายงานลิฟต์เสีย</h4>
-            <span id="loadingStatus" class="badge bg-warning text-dark fs-6">⏳ กำลังเชื่อมต่อข้อมูล...</span>
+            <h4 class="mb-0">📊 Dashboard: รายงานลิฟต์เสียและสถานะช่าง</h4>
+            <span id="loadingStatus" class="badge bg-warning text-dark fs-6">⏳ กำลังเชื่อมต่อข้อมูลแบบ Real-time...</span>
         </div>
 
         <!-- Tabs -->
@@ -66,13 +66,13 @@
                     <div class="row flex-grow-1" style="height: 80%;">
                         <div class="col-6 h-100">
                             <div class="card-panel">
-                                <div class="card-header-custom text-center">สัดส่วนความเร่งด่วน</div>
+                                <div class="card-header-custom text-center">สัดส่วนความเร่งด่วนของลิฟต์เสีย</div>
                                 <div class="card-body-chart"><canvas id="elevatorChart"></canvas></div>
                             </div>
                         </div>
                         <div class="col-6 h-100">
                             <div class="card-panel">
-                                <div class="card-header-custom text-center">สถานะช่าง (คน)</div>
+                                <div class="card-header-custom text-center">สถานะการเดินทางทีมช่าง (คน)</div>
                                 <div class="card-body-chart"><canvas id="techChart"></canvas></div>
                             </div>
                         </div>
@@ -96,7 +96,7 @@
             <!-- หน้า 3 -->
             <div class="tab-pane fade" id="normal">
                 <div class="card-panel">
-                    <div class="card-header-custom text-dark" style="background-color: #ffe066;">⚠️ รายการระดับปานกลาง/ปกติ</div>
+                    <div class="card-header-custom text-dark" style="background-color: #ffe066;">⚠️ รายการระดับปานกลาง/ปกติ (ดึงข้อมูลล่าสุด)</div>
                     <div class="card-body-scroll">
                         <table class="table table-hover align-middle mb-0">
                             <thead><tr><th width="12%">ความเร่งด่วน</th><th width="12%">วันที่รับแจ้ง</th><th width="25%">สถานที่</th><th width="30%">รายละเอียดปัญหา</th><th width="21%">สถานะ</th></tr></thead>
@@ -113,13 +113,18 @@
                         <div class="card-panel">
                             <div class="card-header-custom">รายชื่อช่าง (อัปเดตล่าสุด)</div>
                             <div class="card-body-scroll p-3">
-                                <h6 class="text-danger fw-bold">🔴 เดินทางไม่ได้ (6 คน)</h6><ul class="list-unstyled text-muted small ms-2"><li>- ต้อม, พอส, เปา (อ่อนนุช 66)</li><li>- Pele (เสรีไทย 43)</li><li>- อาร์ม ดีทรัสส์ (รามคำแหง C2)</li><li>- โจ๊ก (สวนสยาม 13)</li><li>- พร (กรุงเทพกรีฑา 7)</li><li>- กร (รามคำแหง 2)</li></ul>
-                                <h6 class="text-warning text-dark fw-bold mt-3">🟠 เดินทางลำบาก (6 คน)</h6><ul class="list-unstyled text-muted small ms-2"><li>- Nuk (รามคำแหง)</li><li>- Atthaphong (เฉลิมพระเกียรติ)</li><li>- JAMES (ลาดกระบัง)</li><li>- โตโต้ (รามคำแหง C2)</li><li>- best (นวมินทร์ 111)</li><li>- กานต์ (รามคำแหง 43/1)</li></ul>
-                                <h6 class="text-success fw-bold mt-3">🟢 เดินทางได้ (2 คน)</h6><ul class="list-unstyled text-muted small ms-2"><li>- พี่ชล (มีรถเฮี๊ยบไปรับ)</li><li>- พี (ด่านสำโรง)</li></ul>
+                                <h6 class="text-danger fw-bold">🔴 เดินทางไม่ได้ (<span id="count-red">0</span> คน)</h6>
+                                <ul id="list-red" class="list-unstyled text-muted small ms-2"></ul>
+                                
+                                <h6 class="text-warning text-dark fw-bold mt-3">🟠 เดินทางลำบาก (<span id="count-orange">0</span> คน)</h6>
+                                <ul id="list-orange" class="list-unstyled text-muted small ms-2"></ul>
+                                
+                                <h6 class="text-success fw-bold mt-3">🟢 เดินทางได้ (<span id="count-green">0</span> คน)</h6>
+                                <ul id="list-green" class="list-unstyled text-muted small ms-2"></ul>
                             </div>
                         </div>
                     </div>
-                    <div class="col-8 pr-0 h-100" style="padding-right: 0;"><div class="card-panel"><div id="map"></div></div></div>
+                    <div class="col-8 pr-0 h-100" style="padding-right: 0;"><div class="card-panel p-2"><div id="map"></div></div></div>
                 </div>
             </div>
 
@@ -133,11 +138,20 @@
 
     <script>
         // =========================================================
+        // ⚠️ การตั้งค่า Google Sheets (เชื่อม 2 หน้ากระดาษ)
+        // =========================================================
         const GOOGLE_SHEET_ID = '1QfHT6dAvQzlVPZBBCFX6X0y9-ukKfBt0oytBH1y9XEo'; 
-        const GID = '0'; 
+        const GID_ELEVATOR = '0';          // GID หน้าแรก (ลิฟต์เสีย)
+        const GID_TECH = '827315874';      // GID หน้าสอง (สถานะทีมช่าง)
         // =========================================================
 
+        // ตัวแปรเก็บ Instance ของกราฟและแผนที่
         let chartElevatorInstance = null;
+        let chartTechInstance = null;
+        let map = null;
+        let mapMarkers = [];
+
+        // ฟังก์ชันวาดกราฟวงกลม
         function drawElevatorChart(urgent, medium, resolved) {
             const ctx = document.getElementById('elevatorChart').getContext('2d');
             if(chartElevatorInstance) chartElevatorInstance.destroy();
@@ -151,38 +165,57 @@
             });
         }
 
-        function fetchSheetData() {
+        // ฟังก์ชันวาดกราฟแท่ง
+        function drawTechChart(cRed, cOrange, cGreen) {
+            const ctx = document.getElementById('techChart').getContext('2d');
+            if(chartTechInstance) chartTechInstance.destroy();
+            chartTechInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['🔴 เดินทางไม่ได้', '🟠 เดินทางลำบาก', '🟢 เดินทางได้'],
+                    datasets: [{ data: [cRed, cOrange, cGreen], backgroundColor: ['#dc3545', '#ffc107', '#28a745'], borderRadius: 5 }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
+            });
+        }
+
+        // ฟังก์ชันวาดจุดบนแผนที่
+        function drawMap(techs) {
+            if(!map) {
+                map = L.map('map').setView([13.75, 100.67], 11);
+                L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}').addTo(map);
+            } else {
+                mapMarkers.forEach(m => map.removeLayer(m));
+                mapMarkers = [];
+            }
+
+            techs.forEach(t => {
+                let marker = L.circleMarker([t.lat, t.lng], { color: '#fff', weight: 1, fillColor: t.color, fillOpacity: 0.9, radius: 9 }).addTo(map).bindPopup(`<b>${t.name}</b><br>สถานะ: ${t.statusName}`);
+                mapMarkers.push(marker);
+            });
+        }
+
+        // ฟังก์ชันโหลดข้อมูล Google Sheets ทะลุ CORS (ใช้ GVIZ API)
+        function fetchSheetData(gid) {
             return new Promise((resolve) => {
                 const callbackName = 'sheet_cb_' + Math.random().toString(36).substring(2, 9);
-                
                 const timeout = setTimeout(() => {
-                    if (window[callbackName]) {
-                        delete window[callbackName];
-                        resolve(null);
-                    }
+                    if (window[callbackName]) { delete window[callbackName]; resolve(null); }
                 }, 10000); 
 
                 window[callbackName] = function(data) {
                     clearTimeout(timeout);
                     delete window[callbackName];
-
                     if (data && data.table && data.table.rows) {
-                        const rows = data.table.rows.map(row => 
-                            row.c ? row.c.map(cell => cell ? (cell.v !== null && cell.v !== undefined ? String(cell.v) : '') : '') : []
-                        );
+                        const rows = data.table.rows.map(row => row.c ? row.c.map(cell => cell ? (cell.v !== null && cell.v !== undefined ? String(cell.v) : '') : '') : []);
                         resolve(rows);
-                    } else { 
-                        resolve(null); 
-                    }
+                    } else { resolve(null); }
                 };
 
                 const script = document.createElement('script');
-                script.src = `https://docs.google.com/spreadsheets/d/${GOOGLE_SHEET_ID}/gviz/tq?gid=${GID}&tqx=responseHandler:${callbackName}`;
-                
+                script.src = `https://docs.google.com/spreadsheets/d/${GOOGLE_SHEET_ID}/gviz/tq?gid=${gid}&tqx=responseHandler:${callbackName}`;
                 script.onerror = function() {
-                    clearTimeout(timeout);
-                    delete window[callbackName];
-                    resolve(null);
+                    clearTimeout(timeout); delete window[callbackName]; resolve(null);
                 };
                 document.body.appendChild(script);
             });
@@ -190,23 +223,25 @@
 
         async function initDashboard() {
             try {
-                const dataRows = await fetchSheetData();
+                // วิ่งโหลดข้อมูลพร้อมกันทั้ง 2 หน้า
+                const [elevatorData, techData] = await Promise.all([
+                    fetchSheetData(GID_ELEVATOR),
+                    fetchSheetData(GID_TECH)
+                ]);
                 
-                if (!dataRows) {
-                    throw new Error("ดึงข้อมูลล้มเหลว (ตรวจสอบให้แน่ใจว่าไฟล์เปิดแชร์ 'ทุกคนที่มีลิงก์' แล้ว)");
-                }
+                if (!elevatorData) throw new Error("ไม่สามารถดึงข้อมูลลิฟต์เสียได้");
 
+                // ==========================================
+                // 1. จัดการข้อมูลลิฟต์เสีย
+                // ==========================================
                 let uCount = 0, mCount = 0, rCount = 0;
                 let htmlUrgent = '', htmlNormal = '';
 
-                // เช็คว่าแถวแรกเป็น Header หรือไม่
-                const firstRowString = dataRows[0] ? dataRows[0].join('') : '';
-                const startIndex = (firstRowString.includes('สถานที่') || firstRowString.includes('โครงการ')) ? 1 : 0;
+                const elStartIndex = (elevatorData[0] && elevatorData[0].join('').includes('สถานที่')) ? 1 : 0;
 
-                dataRows.slice(startIndex).forEach((row) => {
+                elevatorData.slice(elStartIndex).forEach((row) => {
                     if (!row || row.length < 3) return;
-
-                    // ตำแหน่งคอลัมน์: 0=วันที่, 2=สถานที่, 3=ปัญหา, 4=สถานะ
+                    // อ้างอิงตามโครงสร้างชีตของคุณ
                     let date = row[0] ? String(row[0]).trim() : '-';
                     let name = row[2] ? String(row[2]).trim() : ''; 
                     let issue = row[3] ? String(row[3]).trim() : '';
@@ -217,10 +252,8 @@
                     let priority = 'Medium';
                     let isResolved = false;
 
-                    // ตรรกะแยกความเร่งด่วน
                     if (status.includes('ใช้งานได้') || status.includes('ปกติ')) {
-                        priority = 'Resolved'; 
-                        isResolved = true;
+                        priority = 'Resolved'; isResolved = true;
                     } else if (issue.includes('น้ำ') || issue.includes('ค้าง') || status.includes('น้ำ') || status.toLowerCase().includes('shutdown') || status.includes('ปิดลิฟต์')) {
                         priority = 'Urgent';
                     }
@@ -246,9 +279,64 @@
                 document.getElementById('table-normal-body').innerHTML = htmlNormal;
                 drawElevatorChart(uCount, mCount, rCount);
 
+                // ==========================================
+                // 2. จัดการข้อมูลพิกัดทีมช่าง
+                // ==========================================
+                if (techData) {
+                    let techs = [];
+                    let cRed = 0, cOrange = 0, cGreen = 0;
+                    let listRed = '', listOrange = '', listGreen = '';
+
+                    const techStartIndex = (techData[0] && techData[0].join('').includes('ช่าง')) ? 1 : 0;
+                    
+                    techData.slice(techStartIndex).forEach((row) => {
+                        if (!row || row.length < 4) return;
+                        let name = row[0] ? String(row[0]).trim() : '';
+                        let lat = parseFloat(row[1]);
+                        let lng = parseFloat(row[2]);
+                        let status = row[3] ? String(row[3]).trim() : '';
+
+                        if (!name) return;
+
+                        let color = '#dc3545'; // แดงเป็นค่าเริ่มต้น
+                        if (status.includes('ลำบาก')) {
+                            color = '#fd7e14'; // ส้ม
+                            cOrange++;
+                            listOrange += `<li>- ${name} (${status})</li>`;
+                        } else if (status.includes('ไม่ได้')) {
+                            color = '#dc3545'; // แดง
+                            cRed++;
+                            listRed += `<li>- ${name} (${status})</li>`;
+                        } else if (status.includes('ได้') || status.includes('ปกติ')) {
+                            color = '#28a745'; // เขียว
+                            cGreen++;
+                            listGreen += `<li>- ${name} (${status})</li>`;
+                        } else {
+                            // กรณีไม่ได้พิมพ์ระบุสถานะชัดเจน
+                            cRed++;
+                            listRed += `<li>- ${name}</li>`;
+                        }
+
+                        if (!isNaN(lat) && !isNaN(lng)) {
+                            techs.push({ name: name, lat: lat, lng: lng, color: color, statusName: status });
+                        }
+                    });
+
+                    // อัปเดตรายชื่อช่างและกราฟแท่ง
+                    document.getElementById('count-red').innerText = cRed;
+                    document.getElementById('count-orange').innerText = cOrange;
+                    document.getElementById('count-green').innerText = cGreen;
+                    document.getElementById('list-red').innerHTML = listRed || '<li>(ไม่มีข้อมูล)</li>';
+                    document.getElementById('list-orange').innerHTML = listOrange || '<li>(ไม่มีข้อมูล)</li>';
+                    document.getElementById('list-green').innerHTML = listGreen || '<li>(ไม่มีข้อมูล)</li>';
+                    
+                    drawTechChart(cRed, cOrange, cGreen);
+                    drawMap(techs);
+                }
+
                 let badge = document.getElementById('loadingStatus');
                 badge.className = 'badge bg-success fs-6';
-                badge.innerText = '✅ อัปเดตข้อมูลล่าสุดสำเร็จ';
+                badge.innerText = '✅ ซิงค์ข้อมูล Real-time สมบูรณ์';
 
             } catch (error) {
                 let badge = document.getElementById('loadingStatus');
@@ -260,39 +348,12 @@
         document.addEventListener("DOMContentLoaded", function() {
             initDashboard();
 
-            // กราฟแท่งช่าง
-            new Chart(document.getElementById('techChart').getContext('2d'), {
-                type: 'bar',
-                data: {
-                    labels: ['🔴 เดินทางไม่ได้', '🟠 เดินทางลำบาก', '🟢 เดินทางได้'],
-                    datasets: [{ data: [6, 6, 2], backgroundColor: ['#dc3545', '#ffc107', '#28a745'], borderRadius: 5 }]
-                },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+            // จัดการบั๊กของ Leaflet เวลาที่ Map ถูกซ่อนอยู่ใน Tab
+            document.getElementById('tab-map').addEventListener('shown.bs.tab', () => {
+                if(map) {
+                    setTimeout(() => map.invalidateSize(), 100);
+                }
             });
-
-            // แผนที่
-            let map = L.map('map').setView([13.75, 100.67], 11);
-            L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}').addTo(map);
-
-            const techs = [
-                {name: "ต้อม, พอส, เปา", lat: 13.704257, lon: 100.655924, color: "#dc3545"},
-                {name: "Pele", lat: 13.791317, lon: 100.668333, color: "#dc3545"},
-                {name: "อาร์ม", lat: 13.758073, lon: 100.644348, color: "#dc3545"},
-                {name: "โจ๊ก", lat: 13.798228, lon: 100.690657, color: "#dc3545"},
-                {name: "พร", lat: 13.752352, lon: 100.65323, color: "#dc3545"},
-                {name: "กร", lat: 13.668002, lon: 100.680611, color: "#dc3545"},
-                {name: "Nuk", lat: 13.763224, lon: 100.635244, color: "#fd7e14"},
-                {name: "Atthaphong", lat: 13.704402, lon: 100.685325, color: "#fd7e14"},
-                {name: "JAMES", lat: 13.720237, lon: 100.825218, color: "#fd7e14"},
-                {name: "โตโต้", lat: 13.758067, lon: 100.64434, color: "#fd7e14"},
-                {name: "best", lat: 13.809832, lon: 100.643799, color: "#fd7e14"},
-                {name: "กานต์", lat: 13.761451, lon: 100.616329, color: "#fd7e14"}
-            ];
-            techs.forEach(t => {
-                L.circleMarker([t.lat, t.lon], { color: '#fff', weight: 1, fillColor: t.color, fillOpacity: 1, radius: 8 }).addTo(map).bindPopup(`<b>${t.name}</b>`);
-            });
-
-            document.getElementById('tab-map').addEventListener('shown.bs.tab', () => map.invalidateSize());
         });
     </script>
 </body>
