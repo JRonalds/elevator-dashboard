@@ -13,35 +13,121 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin=""/>
     
     <style>
-        html, body { height: 100%; margin: 0; overflow: hidden; font-family: 'Prompt', sans-serif; background-color: #eef2f6; }
-        .app-container { display: flex; flex-direction: column; height: 100vh; }
-        .app-header { flex: 0 0 auto; background: linear-gradient(90deg, #0f2027, #203a43, #2c5364); color: white; padding: 12px 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.2); z-index: 10; }
-        .nav-tabs { flex: 0 0 auto; background-color: white; padding: 10px 20px 0; border-bottom: 2px solid #dee2e6; }
-        .nav-tabs .nav-link { color: #495057; font-weight: 500; border: none; border-bottom: 3px solid transparent; padding: 10px 20px; margin-bottom: -2px; }
-        .nav-tabs .nav-link.active { color: #0d6efd; background: none; border-bottom: 3px solid #0d6efd; }
-        .tab-content { flex: 1 1 auto; overflow: hidden; padding: 15px 20px; }
-        .tab-pane { height: 100%; }
-        .stat-card { border-radius: 10px; padding: 15px; color: white; text-align: center; height: 100%; display: flex; flex-direction: column; justify-content: center; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        body { 
+            margin: 0; 
+            font-family: 'Prompt', sans-serif; 
+            background-color: #eef2f6; 
+            /* ยกเลิก overflow: hidden เพื่อให้มือถือเลื่อนจอลงได้ */
+        }
+        .app-container { 
+            display: flex; 
+            flex-direction: column; 
+            min-height: 100vh; 
+        }
+        .app-header { 
+            background: linear-gradient(90deg, #0f2027, #203a43, #2c5364); 
+            color: white; 
+            padding: 12px 20px; 
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2); 
+            z-index: 10; 
+        }
+        
+        /* ปรับให้ Tabs เลื่อนซ้ายขวาได้ในมือถือ */
+        .nav-tabs { 
+            background-color: white; 
+            padding: 10px 20px 0; 
+            border-bottom: 2px solid #dee2e6;
+            flex-wrap: nowrap;
+            overflow-x: auto;
+            overflow-y: hidden;
+            -webkit-overflow-scrolling: touch;
+        }
+        .nav-tabs::-webkit-scrollbar { display: none; } /* ซ่อน scrollbar */
+        .nav-tabs .nav-link { 
+            color: #495057; 
+            font-weight: 500; 
+            border: none; 
+            border-bottom: 3px solid transparent; 
+            padding: 10px 20px; 
+            margin-bottom: -2px;
+            white-space: nowrap;
+        }
+        .nav-tabs .nav-link.active { 
+            color: #0d6efd; 
+            background: none; 
+            border-bottom: 3px solid #0d6efd; 
+        }
+        
+        .tab-content { padding: 15px 20px; }
+        
+        .stat-card { 
+            border-radius: 10px; 
+            padding: 15px; 
+            color: white; 
+            text-align: center; 
+            display: flex; 
+            flex-direction: column; 
+            justify-content: center; 
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1); 
+            height: 100%;
+            min-height: 100px;
+        }
         .bg-danger-grad { background: linear-gradient(45deg, #ff416c, #ff4b2b); }
         .bg-warning-grad { background: linear-gradient(45deg, #f7971e, #ffd200); color: #333;}
         .bg-success-grad { background: linear-gradient(45deg, #11998e, #38ef7d); }
-        .card-panel { background: white; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); height: 100%; display: flex; flex-direction: column; overflow: hidden; }
-        .card-header-custom { flex: 0 0 auto; padding: 12px 15px; border-bottom: 1px solid #eee; font-weight: 600; background-color: #f8f9fa; }
-        .card-body-chart { flex: 1 1 auto; position: relative; min-height: 0; padding: 15px; }
-        .card-body-scroll { flex: 1 1 auto; overflow-y: auto; padding: 0; }
-        .table thead th { position: sticky; top: 0; background-color: #343a40; color: white; z-index: 1; }
-        .table tbody tr:hover { background-color: #f1f3f5; }
-        #map { height: 100%; width: 100%; background-color: #e5e3df; border-radius: 8px;}
+        
+        .card-panel { 
+            background: white; 
+            border-radius: 10px; 
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05); 
+            display: flex; 
+            flex-direction: column; 
+            overflow: hidden;
+            height: 100%;
+        }
+        .card-header-custom { 
+            padding: 12px 15px; 
+            border-bottom: 1px solid #eee; 
+            font-weight: 600; 
+            background-color: #f8f9fa; 
+        }
+        .card-body-chart { 
+            position: relative; 
+            height: 250px; /* กำหนดความสูงกราฟให้ตายตัว ไม่พังเวลากดมือถือ */
+            padding: 15px; 
+            width: 100%;
+        }
+        .card-body-scroll { 
+            overflow-y: auto; 
+            max-height: 60vh; /* จำกัดความสูงตาราง ให้หน้าเว็บไม่ยาวเกินไป */
+        }
+        
+        /* ป้องกันตารางบีบตัวหนังสือ */
+        .table { min-width: 600px; } 
+        .table thead th { 
+            position: sticky; 
+            top: 0; 
+            background-color: #343a40; 
+            color: white; 
+            z-index: 1; 
+        }
+        
+        #map { 
+            width: 100%; 
+            height: 400px; /* กำหนดความสูงแผนที่ */
+            background-color: #e5e3df; 
+            border-radius: 8px;
+        }
         .leaflet-popup-content-wrapper { font-family: 'Prompt', sans-serif; }
     </style>
 </head>
 <body>
 
     <div class="app-container">
-        <!-- Header -->
-        <div class="app-header d-flex justify-content-between align-items-center">
-            <h4 class="mb-0">📊 Dashboard: รายงานลิฟต์เสียและสถานะช่าง</h4>
-            <span id="loadingStatus" class="badge bg-warning text-dark fs-6">⏳ กำลังเชื่อมต่อข้อมูลแบบ Real-time...</span>
+        <!-- Header: ปรับให้ยืดหยุ่นในมือถือ -->
+        <div class="app-header d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2">
+            <h5 class="mb-0">📊 Dashboard: รายงานลิฟต์เสีย</h5>
+            <span id="loadingStatus" class="badge bg-warning text-dark fs-6 align-self-start align-self-md-auto">⏳ กำลังเชื่อมต่อข้อมูล...</span>
         </div>
 
         <!-- Tabs -->
@@ -57,24 +143,23 @@
             
             <!-- หน้า 1 -->
             <div class="tab-pane fade show active" id="overview">
-                <div class="d-flex flex-column h-100">
-                    <div class="row flex-shrink-0 mb-3" style="height: 15%;">
-                        <div class="col-4"><div class="stat-card bg-danger-grad"><h2 class="mb-0 fw-bold" id="count-urgent">0</h2><span>ลิฟต์วิกฤต (น้ำเข้า/ค้าง)</span></div></div>
-                        <div class="col-4"><div class="stat-card bg-warning-grad"><h2 class="mb-0 fw-bold" id="count-medium">0</h2><span>รอตรวจสอบ/รออะไหล่</span></div></div>
-                        <div class="col-4"><div class="stat-card bg-success-grad"><h2 class="mb-0 fw-bold" id="count-resolved">0</h2><span>แก้ไขใช้งานได้แล้ว</span></div></div>
-                    </div>
-                    <div class="row flex-grow-1" style="height: 80%;">
-                        <div class="col-6 h-100">
-                            <div class="card-panel">
-                                <div class="card-header-custom text-center">สัดส่วนความเร่งด่วนของลิฟต์เสีย</div>
-                                <div class="card-body-chart"><canvas id="elevatorChart"></canvas></div>
-                            </div>
+                <!-- ใช้ Grid ของ Bootstrap (col-12 สำหรับมือถือ, col-md-4 สำหรับคอม) -->
+                <div class="row mb-3">
+                    <div class="col-12 col-md-4 mb-2 mb-md-0"><div class="stat-card bg-danger-grad"><h2 class="mb-0 fw-bold" id="count-urgent">0</h2><span>ลิฟต์วิกฤต (น้ำเข้า/ค้าง)</span></div></div>
+                    <div class="col-12 col-md-4 mb-2 mb-md-0"><div class="stat-card bg-warning-grad"><h2 class="mb-0 fw-bold" id="count-medium">0</h2><span>รอตรวจสอบ/รออะไหล่</span></div></div>
+                    <div class="col-12 col-md-4"><div class="stat-card bg-success-grad"><h2 class="mb-0 fw-bold" id="count-resolved">0</h2><span>แก้ไขใช้งานได้แล้ว</span></div></div>
+                </div>
+                <div class="row">
+                    <div class="col-12 col-md-6 mb-3 mb-md-0">
+                        <div class="card-panel">
+                            <div class="card-header-custom text-center">สัดส่วนความเร่งด่วนของลิฟต์เสีย</div>
+                            <div class="card-body-chart"><canvas id="elevatorChart"></canvas></div>
                         </div>
-                        <div class="col-6 h-100">
-                            <div class="card-panel">
-                                <div class="card-header-custom text-center">สถานะการเดินทางทีมช่าง (คน)</div>
-                                <div class="card-body-chart"><canvas id="techChart"></canvas></div>
-                            </div>
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <div class="card-panel">
+                            <div class="card-header-custom text-center">สถานะการเดินทางทีมช่าง (คน)</div>
+                            <div class="card-body-chart"><canvas id="techChart"></canvas></div>
                         </div>
                     </div>
                 </div>
@@ -84,9 +169,10 @@
             <div class="tab-pane fade" id="urgent">
                 <div class="card-panel">
                     <div class="card-header-custom bg-danger text-white">🚨 รายการระดับวิกฤต (ดึงข้อมูลล่าสุด)</div>
-                    <div class="card-body-scroll">
+                    <!-- table-responsive ช่วยให้เลื่อนตารางซ้ายขวาได้ในมือถือ -->
+                    <div class="card-body-scroll table-responsive">
                         <table class="table table-hover align-middle mb-0">
-                            <thead><tr><th width="12%">วันที่รับแจ้ง</th><th width="23%">สถานที่</th><th width="40%">รายละเอียดปัญหา</th><th width="25%">สถานะ</th></tr></thead>
+                            <thead><tr><th width="15%">วันที่รับแจ้ง</th><th width="25%">สถานที่</th><th width="40%">รายละเอียดปัญหา</th><th width="20%">สถานะ</th></tr></thead>
                             <tbody id="table-urgent-body"></tbody>
                         </table>
                     </div>
@@ -97,9 +183,9 @@
             <div class="tab-pane fade" id="normal">
                 <div class="card-panel">
                     <div class="card-header-custom text-dark" style="background-color: #ffe066;">⚠️ รายการระดับปานกลาง/ปกติ (ดึงข้อมูลล่าสุด)</div>
-                    <div class="card-body-scroll">
+                    <div class="card-body-scroll table-responsive">
                         <table class="table table-hover align-middle mb-0">
-                            <thead><tr><th width="12%">ความเร่งด่วน</th><th width="12%">วันที่รับแจ้ง</th><th width="25%">สถานที่</th><th width="30%">รายละเอียดปัญหา</th><th width="21%">สถานะ</th></tr></thead>
+                            <thead><tr><th width="15%">ความเร่งด่วน</th><th width="15%">วันที่รับแจ้ง</th><th width="25%">สถานที่</th><th width="30%">รายละเอียดปัญหา</th><th width="15%">สถานะ</th></tr></thead>
                             <tbody id="table-normal-body"></tbody>
                         </table>
                     </div>
@@ -108,11 +194,11 @@
 
             <!-- หน้า 4 -->
             <div class="tab-pane fade" id="map-view">
-                <div class="row h-100 m-0">
-                    <div class="col-4 pl-0 h-100" style="padding-left: 0; padding-right: 15px;">
+                <div class="row m-0">
+                    <div class="col-12 col-md-4 p-0 pe-md-3 mb-3 mb-md-0">
                         <div class="card-panel">
                             <div class="card-header-custom">รายชื่อช่าง (อัปเดตล่าสุด)</div>
-                            <div class="card-body-scroll p-3">
+                            <div class="p-3" style="max-height: 400px; overflow-y: auto;">
                                 <h6 class="text-danger fw-bold">🔴 เดินทางไม่ได้ (<span id="count-red">0</span> คน)</h6>
                                 <ul id="list-red" class="list-unstyled text-muted small ms-2"></ul>
                                 
@@ -124,7 +210,11 @@
                             </div>
                         </div>
                     </div>
-                    <div class="col-8 pr-0 h-100" style="padding-right: 0;"><div class="card-panel p-2"><div id="map"></div></div></div>
+                    <div class="col-12 col-md-8 p-0">
+                        <div class="card-panel p-2">
+                            <div id="map"></div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -145,13 +235,11 @@
         const GID_TECH = '827315874';      // GID หน้าสอง (สถานะทีมช่าง)
         // =========================================================
 
-        // ตัวแปรเก็บ Instance ของกราฟและแผนที่
         let chartElevatorInstance = null;
         let chartTechInstance = null;
         let map = null;
         let mapMarkers = [];
 
-        // ฟังก์ชันวาดกราฟวงกลม
         function drawElevatorChart(urgent, medium, resolved) {
             const ctx = document.getElementById('elevatorChart').getContext('2d');
             if(chartElevatorInstance) chartElevatorInstance.destroy();
@@ -165,7 +253,6 @@
             });
         }
 
-        // ฟังก์ชันวาดกราฟแท่ง
         function drawTechChart(cRed, cOrange, cGreen) {
             const ctx = document.getElementById('techChart').getContext('2d');
             if(chartTechInstance) chartTechInstance.destroy();
@@ -179,7 +266,6 @@
             });
         }
 
-        // ฟังก์ชันวาดจุดบนแผนที่
         function drawMap(techs) {
             if(!map) {
                 map = L.map('map').setView([13.75, 100.67], 11);
@@ -195,7 +281,6 @@
             });
         }
 
-        // ฟังก์ชันโหลดข้อมูล Google Sheets ทะลุ CORS (ใช้ GVIZ API)
         function fetchSheetData(gid) {
             return new Promise((resolve) => {
                 const callbackName = 'sheet_cb_' + Math.random().toString(36).substring(2, 9);
@@ -223,7 +308,6 @@
 
         async function initDashboard() {
             try {
-                // วิ่งโหลดข้อมูลพร้อมกันทั้ง 2 หน้า
                 const [elevatorData, techData] = await Promise.all([
                     fetchSheetData(GID_ELEVATOR),
                     fetchSheetData(GID_TECH)
@@ -231,9 +315,6 @@
                 
                 if (!elevatorData) throw new Error("ไม่สามารถดึงข้อมูลลิฟต์เสียได้");
 
-                // ==========================================
-                // 1. จัดการข้อมูลลิฟต์เสีย
-                // ==========================================
                 let uCount = 0, mCount = 0, rCount = 0;
                 let htmlUrgent = '', htmlNormal = '';
 
@@ -241,7 +322,6 @@
 
                 elevatorData.slice(elStartIndex).forEach((row) => {
                     if (!row || row.length < 3) return;
-                    // อ้างอิงตามโครงสร้างชีตของคุณ
                     let date = row[0] ? String(row[0]).trim() : '-';
                     let name = row[2] ? String(row[2]).trim() : ''; 
                     let issue = row[3] ? String(row[3]).trim() : '';
@@ -279,9 +359,6 @@
                 document.getElementById('table-normal-body').innerHTML = htmlNormal;
                 drawElevatorChart(uCount, mCount, rCount);
 
-                // ==========================================
-                // 2. จัดการข้อมูลพิกัดทีมช่าง
-                // ==========================================
                 if (techData) {
                     let techs = [];
                     let cRed = 0, cOrange = 0, cGreen = 0;
@@ -298,21 +375,20 @@
 
                         if (!name) return;
 
-                        let color = '#dc3545'; // แดงเป็นค่าเริ่มต้น
+                        let color = '#dc3545';
                         if (status.includes('ลำบาก')) {
-                            color = '#fd7e14'; // ส้ม
+                            color = '#fd7e14';
                             cOrange++;
                             listOrange += `<li>- ${name} (${status})</li>`;
                         } else if (status.includes('ไม่ได้')) {
-                            color = '#dc3545'; // แดง
+                            color = '#dc3545';
                             cRed++;
                             listRed += `<li>- ${name} (${status})</li>`;
                         } else if (status.includes('ได้') || status.includes('ปกติ')) {
-                            color = '#28a745'; // เขียว
+                            color = '#28a745';
                             cGreen++;
                             listGreen += `<li>- ${name} (${status})</li>`;
                         } else {
-                            // กรณีไม่ได้พิมพ์ระบุสถานะชัดเจน
                             cRed++;
                             listRed += `<li>- ${name}</li>`;
                         }
@@ -322,7 +398,6 @@
                         }
                     });
 
-                    // อัปเดตรายชื่อช่างและกราฟแท่ง
                     document.getElementById('count-red').innerText = cRed;
                     document.getElementById('count-orange').innerText = cOrange;
                     document.getElementById('count-green').innerText = cGreen;
@@ -335,24 +410,22 @@
                 }
 
                 let badge = document.getElementById('loadingStatus');
-                badge.className = 'badge bg-success fs-6';
+                badge.className = 'badge bg-success fs-6 align-self-start align-self-md-auto';
                 badge.innerText = '✅ ซิงค์ข้อมูล Real-time สมบูรณ์';
 
             } catch (error) {
                 let badge = document.getElementById('loadingStatus');
-                badge.className = 'badge bg-danger fs-6';
+                badge.className = 'badge bg-danger fs-6 align-self-start align-self-md-auto';
                 badge.innerText = '❌ ' + error.message;
             }
         }
 
         document.addEventListener("DOMContentLoaded", function() {
             initDashboard();
-
-            // จัดการบั๊กของ Leaflet เวลาที่ Map ถูกซ่อนอยู่ใน Tab
+            
+            // แก้บั๊กแผนที่โหลดไม่เต็มเมื่อสลับแท็บ
             document.getElementById('tab-map').addEventListener('shown.bs.tab', () => {
-                if(map) {
-                    setTimeout(() => map.invalidateSize(), 100);
-                }
+                if(map) { setTimeout(() => map.invalidateSize(), 100); }
             });
         });
     </script>
