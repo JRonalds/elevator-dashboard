@@ -17,7 +17,6 @@
             margin: 0; 
             font-family: 'Prompt', sans-serif; 
             background-color: #eef2f6; 
-            /* ยกเลิก overflow: hidden เพื่อให้มือถือเลื่อนจอลงได้ */
         }
         .app-container { 
             display: flex; 
@@ -32,7 +31,6 @@
             z-index: 10; 
         }
         
-        /* ปรับให้ Tabs เลื่อนซ้ายขวาได้ในมือถือ */
         .nav-tabs { 
             background-color: white; 
             padding: 10px 20px 0; 
@@ -42,7 +40,7 @@
             overflow-y: hidden;
             -webkit-overflow-scrolling: touch;
         }
-        .nav-tabs::-webkit-scrollbar { display: none; } /* ซ่อน scrollbar */
+        .nav-tabs::-webkit-scrollbar { display: none; }
         .nav-tabs .nav-link { 
             color: #495057; 
             font-weight: 500; 
@@ -93,16 +91,15 @@
         }
         .card-body-chart { 
             position: relative; 
-            height: 250px; /* กำหนดความสูงกราฟให้ตายตัว ไม่พังเวลากดมือถือ */
+            height: 250px;
             padding: 15px; 
             width: 100%;
         }
         .card-body-scroll { 
             overflow-y: auto; 
-            max-height: 60vh; /* จำกัดความสูงตาราง ให้หน้าเว็บไม่ยาวเกินไป */
+            max-height: 60vh;
         }
         
-        /* ป้องกันตารางบีบตัวหนังสือ */
         .table { min-width: 600px; } 
         .table thead th { 
             position: sticky; 
@@ -114,7 +111,7 @@
         
         #map { 
             width: 100%; 
-            height: 400px; /* กำหนดความสูงแผนที่ */
+            height: 400px; 
             background-color: #e5e3df; 
             border-radius: 8px;
         }
@@ -124,18 +121,19 @@
 <body>
 
     <div class="app-container">
-        <!-- Header: ปรับให้ยืดหยุ่นในมือถือ -->
+        <!-- Header -->
         <div class="app-header d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2">
-            <h5 class="mb-0">📊 Dashboard: รายงานลิฟต์เสีย</h5>
+            <h5 class="mb-0">📊 Dashboard: รายงานลิฟต์เสียและสถานะช่าง</h5>
             <span id="loadingStatus" class="badge bg-warning text-dark fs-6 align-self-start align-self-md-auto">⏳ กำลังเชื่อมต่อข้อมูล...</span>
         </div>
 
         <!-- Tabs -->
         <ul class="nav nav-tabs" id="myTab" role="tablist">
             <li class="nav-item" role="presentation"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#overview" type="button">📈 1. ภาพรวมสถิติ</button></li>
-            <li class="nav-item" role="presentation"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#urgent" type="button">🚨 2. งานวิกฤต (Priority 1)</button></li>
-            <li class="nav-item" role="presentation"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#normal" type="button">⚠️ 3. งานทั่วไป/แก้ไขแล้ว</button></li>
-            <li class="nav-item" role="presentation"><button class="nav-link" id="tab-map" data-bs-toggle="tab" data-bs-target="#map-view" type="button">🗺️ 4. พิกัดทีมช่าง</button></li>
+            <li class="nav-item" role="presentation"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#urgent" type="button">🚨 2. งานวิกฤต</button></li>
+            <li class="nav-item" role="presentation"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#normal" type="button">⚠️ 3. งานทั่วไป (รอดำเนินการ)</button></li>
+            <li class="nav-item" role="presentation"><button class="nav-link text-success" data-bs-toggle="tab" data-bs-target="#resolved" type="button">✅ 4. งานที่แก้ไขเสร็จแล้ว</button></li>
+            <li class="nav-item" role="presentation"><button class="nav-link" id="tab-map" data-bs-toggle="tab" data-bs-target="#map-view" type="button">🗺️ 5. พิกัดทีมช่าง</button></li>
         </ul>
 
         <!-- Content -->
@@ -143,7 +141,6 @@
             
             <!-- หน้า 1 -->
             <div class="tab-pane fade show active" id="overview">
-                <!-- ใช้ Grid ของ Bootstrap (col-12 สำหรับมือถือ, col-md-4 สำหรับคอม) -->
                 <div class="row mb-3">
                     <div class="col-12 col-md-4 mb-2 mb-md-0"><div class="stat-card bg-danger-grad"><h2 class="mb-0 fw-bold" id="count-urgent">0</h2><span>ลิฟต์วิกฤต (น้ำเข้า/ค้าง)</span></div></div>
                     <div class="col-12 col-md-4 mb-2 mb-md-0"><div class="stat-card bg-warning-grad"><h2 class="mb-0 fw-bold" id="count-medium">0</h2><span>รอตรวจสอบ/รออะไหล่</span></div></div>
@@ -165,11 +162,10 @@
                 </div>
             </div>
 
-            <!-- หน้า 2 -->
+            <!-- หน้า 2: งานวิกฤต -->
             <div class="tab-pane fade" id="urgent">
                 <div class="card-panel">
-                    <div class="card-header-custom bg-danger text-white">🚨 รายการระดับวิกฤต (ดึงข้อมูลล่าสุด)</div>
-                    <!-- table-responsive ช่วยให้เลื่อนตารางซ้ายขวาได้ในมือถือ -->
+                    <div class="card-header-custom bg-danger text-white">🚨 รายการระดับวิกฤต (Priority 1)</div>
                     <div class="card-body-scroll table-responsive">
                         <table class="table table-hover align-middle mb-0">
                             <thead><tr><th width="15%">วันที่รับแจ้ง</th><th width="25%">สถานที่</th><th width="40%">รายละเอียดปัญหา</th><th width="20%">สถานะ</th></tr></thead>
@@ -179,10 +175,10 @@
                 </div>
             </div>
 
-            <!-- หน้า 3 -->
+            <!-- หน้า 3: งานทั่วไป (รอตรวจสอบ/รออะไหล่) -->
             <div class="tab-pane fade" id="normal">
                 <div class="card-panel">
-                    <div class="card-header-custom text-dark" style="background-color: #ffe066;">⚠️ รายการระดับปานกลาง/ปกติ (ดึงข้อมูลล่าสุด)</div>
+                    <div class="card-header-custom text-dark" style="background-color: #ffe066;">⚠️ รายการระดับปานกลาง (รอดำเนินการ)</div>
                     <div class="card-body-scroll table-responsive">
                         <table class="table table-hover align-middle mb-0">
                             <thead><tr><th width="15%">ความเร่งด่วน</th><th width="15%">วันที่รับแจ้ง</th><th width="25%">สถานที่</th><th width="30%">รายละเอียดปัญหา</th><th width="15%">สถานะ</th></tr></thead>
@@ -192,7 +188,20 @@
                 </div>
             </div>
 
-            <!-- หน้า 4 -->
+            <!-- หน้า 4: แก้ไขเสร็จแล้ว (เพิ่มใหม่) -->
+            <div class="tab-pane fade" id="resolved">
+                <div class="card-panel">
+                    <div class="card-header-custom bg-success text-white">✅ รายการที่แก้ไขเสร็จสมบูรณ์แล้ว</div>
+                    <div class="card-body-scroll table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead><tr><th width="15%">สถานะความสำเร็จ</th><th width="15%">วันที่รับแจ้ง</th><th width="25%">สถานที่</th><th width="25%">รายละเอียดปัญหา</th><th width="20%">อัปเดตล่าสุด</th></tr></thead>
+                            <tbody id="table-resolved-body"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- หน้า 5: พิกัดช่าง -->
             <div class="tab-pane fade" id="map-view">
                 <div class="row m-0">
                     <div class="col-12 col-md-4 p-0 pe-md-3 mb-3 mb-md-0">
@@ -227,13 +236,9 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
 
     <script>
-        // =========================================================
-        // ⚠️ การตั้งค่า Google Sheets (เชื่อม 2 หน้ากระดาษ)
-        // =========================================================
         const GOOGLE_SHEET_ID = '1QfHT6dAvQzlVPZBBCFX6X0y9-ukKfBt0oytBH1y9XEo'; 
-        const GID_ELEVATOR = '0';          // GID หน้าแรก (ลิฟต์เสีย)
-        const GID_TECH = '827315874';      // GID หน้าสอง (สถานะทีมช่าง)
-        // =========================================================
+        const GID_ELEVATOR = '0';          
+        const GID_TECH = '827315874';      
 
         let chartElevatorInstance = null;
         let chartTechInstance = null;
@@ -246,7 +251,7 @@
             chartElevatorInstance = new Chart(ctx, {
                 type: 'doughnut',
                 data: {
-                    labels: ['วิกฤต', 'ปานกลาง', 'ปกติ'],
+                    labels: ['วิกฤต', 'ปานกลาง (รอดำเนินการ)', 'ปกติ (แก้ไขแล้ว)'],
                     datasets: [{ data: [urgent, medium, resolved], backgroundColor: ['#dc3545', '#ffc107', '#28a745'], borderWidth: 0 }]
                 },
                 options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right' } } }
@@ -274,7 +279,6 @@
                 mapMarkers.forEach(m => map.removeLayer(m));
                 mapMarkers = [];
             }
-
             techs.forEach(t => {
                 let marker = L.circleMarker([t.lat, t.lng], { color: '#fff', weight: 1, fillColor: t.color, fillOpacity: 0.9, radius: 9 }).addTo(map).bindPopup(`<b>${t.name}</b><br>สถานะ: ${t.statusName}`);
                 mapMarkers.push(marker);
@@ -287,7 +291,6 @@
                 const timeout = setTimeout(() => {
                     if (window[callbackName]) { delete window[callbackName]; resolve(null); }
                 }, 10000); 
-
                 window[callbackName] = function(data) {
                     clearTimeout(timeout);
                     delete window[callbackName];
@@ -296,7 +299,6 @@
                         resolve(rows);
                     } else { resolve(null); }
                 };
-
                 const script = document.createElement('script');
                 script.src = `https://docs.google.com/spreadsheets/d/${GOOGLE_SHEET_ID}/gviz/tq?gid=${gid}&tqx=responseHandler:${callbackName}`;
                 script.onerror = function() {
@@ -316,7 +318,7 @@
                 if (!elevatorData) throw new Error("ไม่สามารถดึงข้อมูลลิฟต์เสียได้");
 
                 let uCount = 0, mCount = 0, rCount = 0;
-                let htmlUrgent = '', htmlNormal = '';
+                let htmlUrgent = '', htmlNormal = '', htmlResolved = '';
 
                 const elStartIndex = (elevatorData[0] && elevatorData[0].join('').includes('สถานที่')) ? 1 : 0;
 
@@ -341,22 +343,25 @@
                     if (priority === 'Urgent') {
                         uCount++;
                         htmlUrgent += `<tr style="background-color: #fff5f5;"><td>${date}</td><td><strong>${name}</strong></td><td>${issue}</td><td class="text-danger fw-bold">${status}</td></tr>`;
+                    } else if (isResolved) {
+                        rCount++;
+                        // ย้ายไปที่หน้า แก้ไขเสร็จแล้ว (htmlResolved)
+                        htmlResolved += `<tr style="background-color: #eafbee;"><td><span class="badge bg-success">ปกติ (แก้ไขแล้ว)</span></td><td>${date}</td><td><strong>${name}</strong></td><td>${issue}</td><td class="text-success fw-bold">${status}</td></tr>`;
                     } else {
-                        if (isResolved) {
-                            rCount++;
-                            htmlNormal += `<tr style="background-color: #eafbee;"><td><span class="badge bg-success">ปกติ</span></td><td>${date}</td><td><strong>${name}</strong></td><td>${issue}</td><td class="text-success fw-bold">${status}</td></tr>`;
-                        } else {
-                            mCount++;
-                            htmlNormal += `<tr><td><span class="badge bg-warning text-dark">ปานกลาง</span></td><td>${date}</td><td><strong>${name}</strong></td><td>${issue}</td><td class="text-warning text-dark fw-bold">${status}</td></tr>`;
-                        }
+                        mCount++;
+                        // หน้างานทั่วไป (รอตรวจสอบ/ดำเนินการ)
+                        htmlNormal += `<tr><td><span class="badge bg-warning text-dark">ปานกลาง</span></td><td>${date}</td><td><strong>${name}</strong></td><td>${issue}</td><td class="text-warning text-dark fw-bold">${status}</td></tr>`;
                     }
                 });
 
                 document.getElementById('count-urgent').innerText = uCount;
                 document.getElementById('count-medium').innerText = mCount;
                 document.getElementById('count-resolved').innerText = rCount;
+                
                 document.getElementById('table-urgent-body').innerHTML = htmlUrgent;
                 document.getElementById('table-normal-body').innerHTML = htmlNormal;
+                document.getElementById('table-resolved-body').innerHTML = htmlResolved; // อัปเดตตารางหน้าใหม่
+                
                 drawElevatorChart(uCount, mCount, rCount);
 
                 if (techData) {
@@ -423,7 +428,6 @@
         document.addEventListener("DOMContentLoaded", function() {
             initDashboard();
             
-            // แก้บั๊กแผนที่โหลดไม่เต็มเมื่อสลับแท็บ
             document.getElementById('tab-map').addEventListener('shown.bs.tab', () => {
                 if(map) { setTimeout(() => map.invalidateSize(), 100); }
             });
