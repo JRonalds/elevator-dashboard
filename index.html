@@ -100,7 +100,8 @@
             max-height: 60vh;
         }
         
-        .table { min-width: 600px; } 
+        /* ขยายตารางให้กว้างขึ้นอีกนิด เพื่อรองรับคอลัมน์ใหม่ (ปัดซ้ายขวาในมือถือได้) */
+        .table { min-width: 850px; } 
         .table thead th { 
             position: sticky; 
             top: 0; 
@@ -168,33 +169,33 @@
                     <div class="card-header-custom bg-danger text-white">🚨 รายการระดับวิกฤต (Priority 1)</div>
                     <div class="card-body-scroll table-responsive">
                         <table class="table table-hover align-middle mb-0">
-                            <thead><tr><th width="15%">วันที่รับแจ้ง</th><th width="25%">สถานที่</th><th width="40%">รายละเอียดปัญหา</th><th width="20%">สถานะ</th></tr></thead>
+                            <thead><tr><th width="10%">วันที่รับแจ้ง</th><th width="20%">สถานที่</th><th width="25%">รายละเอียดปัญหา</th><th width="15%">สถานะซ่อม</th><th width="15%">การเสนอราคา</th><th width="15%">สถานะอะไหล่</th></tr></thead>
                             <tbody id="table-urgent-body"></tbody>
                         </table>
                     </div>
                 </div>
             </div>
 
-            <!-- หน้า 3: งานทั่วไป (รอตรวจสอบ/รออะไหล่) -->
+            <!-- หน้า 3: งานทั่วไป -->
             <div class="tab-pane fade" id="normal">
                 <div class="card-panel">
                     <div class="card-header-custom text-dark" style="background-color: #ffe066;">⚠️ รายการระดับปานกลาง (รอดำเนินการ)</div>
                     <div class="card-body-scroll table-responsive">
                         <table class="table table-hover align-middle mb-0">
-                            <thead><tr><th width="15%">ความเร่งด่วน</th><th width="15%">วันที่รับแจ้ง</th><th width="25%">สถานที่</th><th width="30%">รายละเอียดปัญหา</th><th width="15%">สถานะ</th></tr></thead>
+                            <thead><tr><th width="10%">ความเร่งด่วน</th><th width="10%">วันที่รับแจ้ง</th><th width="20%">สถานที่</th><th width="20%">รายละเอียดปัญหา</th><th width="15%">สถานะซ่อม</th><th width="13%">การเสนอราคา</th><th width="12%">สถานะอะไหล่</th></tr></thead>
                             <tbody id="table-normal-body"></tbody>
                         </table>
                     </div>
                 </div>
             </div>
 
-            <!-- หน้า 4: แก้ไขเสร็จแล้ว (เพิ่มใหม่) -->
+            <!-- หน้า 4: แก้ไขเสร็จแล้ว -->
             <div class="tab-pane fade" id="resolved">
                 <div class="card-panel">
                     <div class="card-header-custom bg-success text-white">✅ รายการที่แก้ไขเสร็จสมบูรณ์แล้ว</div>
                     <div class="card-body-scroll table-responsive">
                         <table class="table table-hover align-middle mb-0">
-                            <thead><tr><th width="15%">สถานะความสำเร็จ</th><th width="15%">วันที่รับแจ้ง</th><th width="25%">สถานที่</th><th width="25%">รายละเอียดปัญหา</th><th width="20%">อัปเดตล่าสุด</th></tr></thead>
+                            <thead><tr><th width="12%">สถานะความสำเร็จ</th><th width="10%">วันที่รับแจ้ง</th><th width="20%">สถานที่</th><th width="20%">รายละเอียดปัญหา</th><th width="13%">อัปเดตล่าสุด</th><th width="13%">การเสนอราคา</th><th width="12%">สถานะอะไหล่</th></tr></thead>
                             <tbody id="table-resolved-body"></tbody>
                         </table>
                     </div>
@@ -308,6 +309,27 @@
             });
         }
 
+        // ฟังก์ชันสร้าง Badge สถานะเสนอราคา
+        function getQuoteBadge(statusStr) {
+            if (!statusStr || statusStr === '-') return '-';
+            let badgeClass = 'bg-light text-dark border'; 
+            if (statusStr.includes('รอเสนอ')) badgeClass = 'bg-secondary';
+            else if (statusStr.includes('เสนอราคาแล้ว')) badgeClass = 'bg-info text-dark';
+            else if (statusStr.includes('รออนุมัติ')) badgeClass = 'bg-warning text-dark';
+            else if (statusStr.includes('เสร็จสิ้น') || statusStr.includes('อนุมัติแล้ว')) badgeClass = 'bg-success';
+            return `<span class="badge ${badgeClass}">${statusStr}</span>`;
+        }
+
+        // ฟังก์ชันสร้าง Badge สถานะอะไหล่
+        function getPartsBadge(statusStr) {
+            if (!statusStr || statusStr === '-') return '-';
+            let badgeClass = 'bg-light text-dark border'; 
+            if (statusStr.includes('รอ')) badgeClass = 'bg-warning text-dark';
+            else if (statusStr.includes('สั่ง')) badgeClass = 'bg-info text-dark';
+            else if (statusStr.includes('ได้') || statusStr.includes('พร้อม') || statusStr.includes('มี')) badgeClass = 'bg-success';
+            return `<span class="badge ${badgeClass}">${statusStr}</span>`;
+        }
+
         async function initDashboard() {
             try {
                 const [elevatorData, techData] = await Promise.all([
@@ -324,10 +346,13 @@
 
                 elevatorData.slice(elStartIndex).forEach((row) => {
                     if (!row || row.length < 3) return;
+                    
                     let date = row[0] ? String(row[0]).trim() : '-';
                     let name = row[2] ? String(row[2]).trim() : ''; 
                     let issue = row[3] ? String(row[3]).trim() : '';
                     let status = row[4] ? String(row[4]).trim() : '';
+                    let quoteStatus = row[5] ? String(row[5]).trim() : '-'; // คอลัมน์ที่ 6 (F) สถานะเสนอราคา
+                    let partsStatus = row[6] ? String(row[6]).trim() : '-'; // คอลัมน์ที่ 7 (G) สถานะอะไหล่
 
                     if (!name) return;
 
@@ -340,17 +365,19 @@
                         priority = 'Urgent';
                     }
 
+                    // สร้างป้ายสถานะ
+                    let quoteBadge = getQuoteBadge(quoteStatus);
+                    let partsBadge = getPartsBadge(partsStatus);
+
                     if (priority === 'Urgent') {
                         uCount++;
-                        htmlUrgent += `<tr style="background-color: #fff5f5;"><td>${date}</td><td><strong>${name}</strong></td><td>${issue}</td><td class="text-danger fw-bold">${status}</td></tr>`;
+                        htmlUrgent += `<tr style="background-color: #fff5f5;"><td>${date}</td><td><strong>${name}</strong></td><td>${issue}</td><td class="text-danger fw-bold">${status}</td><td>${quoteBadge}</td><td>${partsBadge}</td></tr>`;
                     } else if (isResolved) {
                         rCount++;
-                        // ย้ายไปที่หน้า แก้ไขเสร็จแล้ว (htmlResolved)
-                        htmlResolved += `<tr style="background-color: #eafbee;"><td><span class="badge bg-success">ปกติ (แก้ไขแล้ว)</span></td><td>${date}</td><td><strong>${name}</strong></td><td>${issue}</td><td class="text-success fw-bold">${status}</td></tr>`;
+                        htmlResolved += `<tr style="background-color: #eafbee;"><td><span class="badge bg-success">ปกติ (แก้ไขแล้ว)</span></td><td>${date}</td><td><strong>${name}</strong></td><td>${issue}</td><td class="text-success fw-bold">${status}</td><td>${quoteBadge}</td><td>${partsBadge}</td></tr>`;
                     } else {
                         mCount++;
-                        // หน้างานทั่วไป (รอตรวจสอบ/ดำเนินการ)
-                        htmlNormal += `<tr><td><span class="badge bg-warning text-dark">ปานกลาง</span></td><td>${date}</td><td><strong>${name}</strong></td><td>${issue}</td><td class="text-warning text-dark fw-bold">${status}</td></tr>`;
+                        htmlNormal += `<tr><td><span class="badge bg-warning text-dark">ปานกลาง</span></td><td>${date}</td><td><strong>${name}</strong></td><td>${issue}</td><td class="text-warning text-dark fw-bold">${status}</td><td>${quoteBadge}</td><td>${partsBadge}</td></tr>`;
                     }
                 });
 
@@ -360,7 +387,7 @@
                 
                 document.getElementById('table-urgent-body').innerHTML = htmlUrgent;
                 document.getElementById('table-normal-body').innerHTML = htmlNormal;
-                document.getElementById('table-resolved-body').innerHTML = htmlResolved; // อัปเดตตารางหน้าใหม่
+                document.getElementById('table-resolved-body').innerHTML = htmlResolved;
                 
                 drawElevatorChart(uCount, mCount, rCount);
 
